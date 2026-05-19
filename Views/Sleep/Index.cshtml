@@ -1,0 +1,177 @@
+﻿@model List<Sleep>
+
+@functions {
+    string FormatHours(double decimalHours)
+    {
+        int hours = (int)Math.Floor(decimalHours);
+        int minutes = (int)Math.Round((decimalHours - hours) * 60);
+        return $"{hours}h {minutes}m";
+    }
+}
+
+<div class="max-w-5xl mx-auto p-6">
+
+    <!-- 🛌 FORM -->
+    <div class="bg-white p-6 rounded-2xl shadow mb-6">
+        <h2 class="text-xl font-bold text-pink-500 mb-4">Sleep Entry</h2>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="bg-red-100 text-red-600 p-2 rounded mb-3 text-sm">
+                @ViewBag.Error
+            </div>
+        }
+
+        <form method="post" action="/Sleep/Add" class="space-y-3">
+
+            <div class="flex gap-2">
+                <input type="number" name="hours" placeholder="Hours" min="0" max="24" required
+                       class="w-1/2 p-2 border rounded-lg">
+
+                <input type="number" name="minutes" placeholder="Minutes" min="0" max="59" required
+                       class="w-1/2 p-2 border rounded-lg">
+            </div>
+
+            <select name="quality" required class="w-full p-2 border rounded-lg">
+                <option value="">Sleep Quality</option>
+                <option value="4">Excellent</option>
+                <option value="3">Good</option>
+                <option value="2">Fair</option>
+                <option value="1">Poor</option>
+            </select>
+
+            <textarea name="notes" placeholder="Notes..."
+                      class="w-full p-2 border rounded-lg h-24"></textarea>
+
+            <button class="bg-pink-400 text-white px-4 py-2 rounded-lg">
+                Add Entry
+            </button>
+        </form>
+    </div>
+
+    <!-- 📋 TABLE -->
+    <div class="bg-white p-6 rounded-2xl shadow">
+        <h2 class="text-xl font-bold text-pink-500 mb-4">Sleep History</h2>
+
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="border-b text-left">
+                    <th>Date</th>
+                    <th>Hours</th>
+                    <th>Quality</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var row in Model)
+                {
+                    <tr class="border-b hover:bg-pink-50">
+                        <td>@row.EntryDate.ToString("MMM dd, yyyy")</td>
+                        <td>@FormatHours(row.HoursSlept)</td>
+                        <td>
+                            @{
+                                var q = new Dictionary<int, string> {
+                                                {1,"Poor"}, {2,"Fair"}, {3,"Good"}, {4,"Excellent"}
+                                                };
+                            }
+                            @q[row.SleepQuality]
+                        </td>
+
+                        <td>
+                            <button onclick='openModal(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(row)))'
+                                    class="text-blue-500">
+                                View
+                            </button>
+                        </td>
+
+                        <td>
+                            <a href="/Sleep/Delete/@row.SleepID"
+                               class="text-red-500"
+                               onclick="return confirm('Delete entry?')">
+                                Delete
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- 🔍 MODAL (same behavior) -->
+<div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+
+    <div class="bg-white p-6 rounded-2xl w-full max-w-lg">
+
+        <div class="flex justify-between mb-4">
+            <button onclick="enableEdit()" class="text-pink-500">Edit</button>
+            <button onclick="closeModal()">✖</button>
+        </div>
+
+        <form method="post" action="/Sleep/Edit">
+            <input type="hidden" name="sleepID" id="sleepID">
+
+            <input type="hidden" name="date" id="modalDateHidden">
+            <input type="date" id="modalDate" class="w-full border p-2 rounded mb-2 bg-gray-100" readonly
+                   oninput="document.getElementById('modalDateHidden').value = this.value">
+
+            <div class="flex gap-2 mb-2">
+                <input id="modalHours" name="hours" class="w-1/2 border p-2 rounded" disabled>
+                <input id="modalMinutes" name="minutes" class="w-1/2 border p-2 rounded" disabled>
+            </div>
+
+            <select id="modalQuality" name="quality" disabled class="w-full border p-2 rounded mb-2">
+                <option value="4">Excellent</option>
+                <option value="3">Good</option>
+                <option value="2">Fair</option>
+                <option value="1">Poor</option>
+            </select>
+
+            <textarea id="modalNotes" name="notes" disabled
+                      class="w-full border p-2 rounded h-32"></textarea>
+
+            <button id="saveBtn"
+                    class="mt-3 bg-pink-400 text-white px-4 py-2 rounded hidden">
+                Save
+            </button>
+        </form>
+
+    </div>
+</div>
+
+<script>
+    function openModal(entry) {
+        document.getElementById("modal").classList.remove("hidden");
+
+        document.getElementById("sleepID").value = entry.SleepID;
+
+        let date = entry.EntryDate.substring(0,10);
+        document.getElementById("modalDate").value = date;
+        document.getElementById("modalDateHidden").value = date;
+
+        let hours = Math.floor(entry.HoursSlept);
+        let minutes = Math.round((entry.HoursSlept - hours) * 60);
+
+        document.getElementById("modalHours").value = hours;
+        document.getElementById("modalMinutes").value = minutes;
+
+        document.getElementById("modalQuality").value = entry.SleepQuality;
+        document.getElementById("modalNotes").value = entry.Notes;
+    }
+
+    function closeModal() {
+        document.getElementById("modal").classList.add("hidden");
+    }
+
+    function enableEdit() {
+        document.getElementById("modalHours").disabled = false;
+        document.getElementById("modalMinutes").disabled = false;
+        document.getElementById("modalQuality").disabled = false;
+        document.getElementById("modalNotes").disabled = false;
+        document.getElementById("modalDate").readOnly = false;
+        document.getElementById("saveBtn").classList.remove("hidden");
+    }
+</script>

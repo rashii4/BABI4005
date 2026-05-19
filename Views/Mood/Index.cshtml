@@ -1,0 +1,156 @@
+﻿@model List<Mood>
+@using System.Text.Json
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+@{
+    var error = ViewBag.Error;
+    var moods = new Dictionary<int, string>
+    {
+        {5, "😊 Happy"},
+        {4, "🙂 Good"},
+        {3, "😐 Neutral"},
+        {2, "😟 Anxious"},
+        {1, "😡 Angry"}
+    };
+}
+
+<div class="max-w-5xl mx-auto p-6">
+
+    <!-- ENTRY FORM -->
+    <div class="bg-white p-6 rounded-2xl shadow mb-6">
+        <h2 class="text-xl font-bold text-pink-500 mb-4">Mood Entry</h2>
+
+        @if (error != null)
+        {
+            <div class="bg-red-100 text-red-600 p-2 rounded mb-3 text-sm">
+                @error
+            </div>
+        }
+
+        <form method="post" action="/Mood/Add" class="space-y-3">
+
+            <select name="mood" required
+                    class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-pink-300">
+                <option value="">Select Mood</option>
+                @foreach (var m in moods)
+                {
+                    <option value="@m.Key">@m.Value</option>
+                }
+            </select>
+
+            <textarea name="notes" placeholder="Notes..."
+                      class="w-full p-2 border rounded-lg h-24"></textarea>
+
+            <button class="bg-pink-400 text-white px-4 py-2 rounded-lg hover:bg-pink-500">
+                Add Entry
+            </button>
+        </form>
+    </div>
+
+    <!-- LIST -->
+    <div class="bg-white p-6 rounded-2xl shadow">
+        <h2 class="text-xl font-bold text-pink-500 mb-4">Mood History</h2>
+
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="border-b">
+                    <th>Date</th>
+                    <th>Mood</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var row in Model)
+                {
+                    <tr class="border-b hover:bg-pink-50">
+                        <td>@row.EntryDate.ToString("MMM dd, yyyy")</td>
+                        <td>@moods[row.MoodValue]</td>
+
+                        <td>
+                            <button onclick='openModal(@Html.Raw(JsonSerializer.Serialize(row)))'
+                                    class="text-blue-500">
+                                View
+                            </button>
+                        </td>
+
+                        <td>
+                            <a href="/Mood/Delete/@row.MoodID"
+                               class="text-red-500"
+                               onclick="return confirm('Delete entry?')">
+                                Delete
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- MODAL -->
+<div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+
+    <div class="bg-white p-6 rounded-2xl w-full max-w-lg">
+
+        <div class="flex justify-between mb-4">
+            <button onclick="enableEdit()" class="text-pink-500">Edit</button>
+            <button onclick="closeModal()">✖</button>
+        </div>
+
+        <form method="post" action="/Mood/Edit">
+            <input type="hidden" name="moodID" id="moodID">
+
+            <input type="hidden" name="date" id="modalDateHidden">
+            <input type="date" id="modalDate"
+                   class="w-full border p-2 rounded mb-2 bg-gray-100" readonly
+                   oninput="document.getElementById('modalDateHidden').value = this.value">
+
+            <select id="modalMood" name="mood" disabled
+                    class="w-full border p-2 rounded mb-2">
+                @foreach (var m in moods)
+                {
+                    <option value="@m.Key">@m.Value</option>
+                }
+            </select>
+
+            <textarea id="modalNotes" name="notes" disabled
+                      class="w-full border p-2 rounded h-32"></textarea>
+
+            <button id="saveBtn"
+                    class="mt-3 bg-pink-400 text-white px-4 py-2 rounded hidden">
+                Save
+            </button>
+        </form>
+
+    </div>
+</div>
+
+<script>
+    function openModal(entry) {
+        document.getElementById("modal").classList.remove("hidden");
+
+        document.getElementById("moodID").value = entry.MoodID;
+
+        let date = entry.EntryDate.substring(0,10);
+        document.getElementById("modalDate").value = date;
+        document.getElementById("modalDateHidden").value = date;
+
+        document.getElementById("modalMood").value = entry.MoodValue;
+        document.getElementById("modalNotes").value = entry.Notes;
+    }
+
+    function closeModal() {
+        document.getElementById("modal").classList.add("hidden");
+    }
+
+    function enableEdit() {
+        document.getElementById("modalMood").disabled = false;
+        document.getElementById("modalNotes").disabled = false;
+        document.getElementById("modalDate").readOnly = false;
+        document.getElementById("saveBtn").classList.remove("hidden");
+    }
+</script>

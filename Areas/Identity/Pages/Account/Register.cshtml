@@ -1,0 +1,100 @@
+﻿@page
+@model RegisterModel
+
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="min-h-[75vh] flex items-center justify-center px-4">
+    <div class="w-full max-w-2xl bg-white rounded-3xl shadow-lg p-8 border border-pink-100">
+        <div class="text-center mb-6">
+            <h1 class="text-4xl font-bold text-pink-500">Create your Restora account</h1>
+            <p class="text-gray-500 mt-2">
+                Track your mood, sleep, diary entries, and wellness progress in one place.
+            </p>
+        </div>
+
+        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="space-y-5">
+            <div asp-validation-summary="ModelOnly" class="text-red-500 text-sm"></div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label asp-for="Input.Firstname" class="block text-sm font-medium text-gray-700 mb-1">
+                        First Name
+                    </label>
+                    <input asp-for="Input.Firstname"
+                           class="w-full rounded-xl border border-pink-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-300"
+                           placeholder="First name" />
+                    <span asp-validation-for="Input.Firstname" class="text-red-500 text-sm"></span>
+                </div>
+
+                <div>
+                    <label asp-for="Input.Lastname" class="block text-sm font-medium text-gray-700 mb-1">
+                        Last Name
+                    </label>
+                    <input asp-for="Input.Lastname"
+                           class="w-full rounded-xl border border-pink-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-300"
+                           placeholder="Last name" />
+                    <span asp-validation-for="Input.Lastname" class="text-red-500 text-sm"></span>
+                </div>
+            </div>
+
+            <div>
+                <label asp-for="Input.Institution" class="block text-sm font-medium text-gray-700 mb-1">
+                    School / Institution
+                </label>
+                <input asp-for="Input.Institution"
+                       class="w-full rounded-xl border border-pink-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-300"
+                       placeholder="Example: BCIT" />
+                <span asp-validation-for="Input.Institution" class="text-red-500 text-sm"></span>
+            </div>
+
+            <div>
+                <label asp-for="Input.Email" class="block text-sm font-medium text-gray-700 mb-1"></label>
+                <input asp-for="Input.Email"
+                       class="w-full rounded-xl border border-pink-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-300"
+                       autocomplete="username"
+                       aria-required="true"
+                       placeholder="name@example.com" />
+                <span asp-validation-for="Input.Email" class="text-red-500 text-sm"></span>
+            </div>
+
+            <div>
+                <label asp-for="Input.Password" class="block text-sm font-medium text-gray-700 mb-1"></label>
+                <input asp-for="Input.Password"
+                       class="w-full rounded-xl border border-pink-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-300"
+                       autocomplete="new-password"
+                       aria-required="true"
+                       placeholder="password" />
+                <span asp-validation-for="Input.Password" class="text-red-500 text-sm"></span>
+            </div>
+
+            <div>
+                <label asp-for="Input.ConfirmPassword" class="block text-sm font-medium text-gray-700 mb-1"></label>
+                <input asp-for="Input.ConfirmPassword"
+                       class="w-full rounded-xl border border-pink-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-300"
+                       autocomplete="new-password"
+                       aria-required="true"
+                       placeholder="confirm password" />
+                <span asp-validation-for="Input.ConfirmPassword" class="text-red-500 text-sm"></span>
+            </div>
+
+            <button id="registerSubmit"
+                    type="submit"
+                    class="w-full rounded-xl bg-pink-500 text-white font-semibold py-3 hover:bg-pink-600 transition">
+                Register
+            </button>
+
+            <p class="text-center text-sm text-gray-600">
+                Already have an account?
+                <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl" class="text-pink-500 hover:underline">
+                    Log in
+                </a>
+            </p>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

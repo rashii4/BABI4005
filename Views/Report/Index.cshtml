@@ -1,0 +1,409 @@
+﻿@{
+    var dates = ViewBag.Dates as List<string>;
+    var sleepList = ViewBag.Sleep as List<double>;
+    var moodList = ViewBag.Mood as List<double>;
+    var qualityList = ViewBag.Quality as List<int>;
+
+    // Mood map  [0]=Label  [1]=Emoji
+    var moodMap = new Dictionary<int, string[]>
+    {
+        { 1, new[] { "Angry",   "😡" } },
+        { 2, new[] { "Anxious", "😟" } },
+        { 3, new[] { "Neutral", "😐" } },
+        { 4, new[] { "Good",    "🙂" } },
+        { 5, new[] { "Happy",   "😊" } }
+    };
+
+    // Sleep quality map  [0]=Label  [1]=Color
+    var sleepQualityMap = new Dictionary<int, string[]>
+    {
+        { 1, new[] { "Poor",      "#fbb6ce" } },
+        { 2, new[] { "Fair",      "#f472b6" } },
+        { 3, new[] { "Good",      "#ec4899" } },
+        { 4, new[] { "Excellent", "#be185d" } }
+    };
+
+    // Per-day mood labels  [0]=Label  [1]=Emoji
+    var dailyMoodLabels = new List<string[]>();
+    foreach (var m in moodList)
+    {
+        if (m == 0)
+        {
+            dailyMoodLabels.Add(new[] { "No Data", "❌" });
+        }
+        else
+        {
+            int nearest = (int)Math.Round(m);
+            nearest = Math.Max(1, Math.Min(5, nearest));
+            dailyMoodLabels.Add(moodMap[nearest]);
+        }
+    }
+
+    // Weekly averages — skip zero-value days
+    double weekMoodSum = 0; int weekMoodCount = 0;
+    double weekSleepSum = 0; int weekSleepCount = 0;
+    double weekQualitySum = 0;
+
+    for (int i = 0; i < moodList.Count; i++)
+    {
+        if (moodList[i] > 0) { weekMoodSum += moodList[i]; weekMoodCount++; }
+        if (sleepList[i] > 0)
+        {
+            weekSleepSum += sleepList[i];
+            weekQualitySum += qualityList[i];
+            weekSleepCount++;
+        }
+    }
+
+    double avgWeekMood = weekMoodCount > 0 ? Math.Round(weekMoodSum / weekMoodCount, 2) : 0;
+    double avgWeekSleep = weekSleepCount > 0 ? Math.Round(weekSleepSum / weekSleepCount, 2) : 0;
+    int avgWeekQuality = weekSleepCount > 0 ? (int)Math.Round(weekQualitySum / weekSleepCount) : 0;
+
+    int avgNearestMood = (int)Math.Max(1, Math.Min(5, Math.Round(avgWeekMood)));
+    string[] avgWeekMoodEntry = avgWeekMood > 0 ? moodMap[avgNearestMood] : new[] { "No Data", "❌" };
+    string avgWeekMoodEmoji = avgWeekMoodEntry[1];
+    string avgWeekMoodLabel = avgWeekMoodEntry[0];
+    int avgWeekSleepHours = (int)Math.Floor(avgWeekSleep);
+    int avgWeekSleepMinutes = (int)Math.Round((avgWeekSleep - avgWeekSleepHours) * 60);
+    string avgWeekQualityLabel = sleepQualityMap.ContainsKey(avgWeekQuality) ? sleepQualityMap[avgWeekQuality][0] : "No Data";
+    string avgWeekQualityColor = sleepQualityMap.ContainsKey(avgWeekQuality) ? sleepQualityMap[avgWeekQuality][1] : "#d1d5db";
+
+    int totalWeeks = ViewBag.TotalWeeks != null ? (int)ViewBag.TotalWeeks : 1;
+}
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="max-w-5xl mx-auto p-6">
+
+    <!-- ── DASHBOARD CARD ── -->
+    <div class="bg-white p-6 rounded-2xl shadow mb-6">
+        <h2 class="text-2xl font-bold text-pink-500 mb-5">Weekly Dashboard (Last 7 Days)</h2>
+
+        <!-- Three summary cards -->
+        <div class="grid grid-cols-3 gap-4 mb-6">
+
+            <div class="bg-pink-50 border border-pink-200 rounded-xl p-4 text-center">
+                <p class="text-xs text-pink-400 font-semibold uppercase tracking-widest mb-1">Average Mood</p>
+                <p class="text-3xl">@avgWeekMoodEmoji</p>
+                <p class="text-sm font-medium text-gray-600 mt-1">@avgWeekMoodLabel</p>
+            </div>
+
+            <div class="bg-pink-50 border border-pink-200 rounded-xl p-4 text-center">
+                <p class="text-xs text-pink-400 font-semibold uppercase tracking-widest mb-1">Average Sleep</p>
+                <p class="text-3xl font-bold text-pink-500">@avgWeekSleepHours h @avgWeekSleepMinutes m</p>
+                <p class="text-sm text-gray-400 mt-1">per night</p>
+            </div>
+
+            <div class="bg-pink-50 border border-pink-200 rounded-xl p-4 text-center">
+                <p class="text-xs text-pink-400 font-semibold uppercase tracking-widest mb-1">Sleep Quality</p>
+                <div class="w-4 h-4 rounded-full mx-auto mt-1 mb-1" style="background:@avgWeekQualityColor;"></div>
+                <p class="text-sm font-medium text-gray-600">@avgWeekQualityLabel</p>
+            </div>
+
+        </div>
+
+        <!-- Chart -->
+        <div class="relative">
+            <canvas id="weeklyChart" height="120"></canvas>
+        </div>
+
+        <!-- Legend -->
+        <div class="mt-4">
+            <p class="text-sm font-semibold text-gray-600 mb-2">Sleep Quality:</p>
+            <div class="flex gap-4 flex-wrap">
+                @foreach (var sq in sleepQualityMap)
+                {
+                    <div class="flex items-center gap-1.5">
+                        <div class="w-3 h-3 rounded-sm" style="background:@sq.Value[1];"></div>
+                        <span class="text-sm text-gray-600">@sq.Value[0]</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- ── PAST WEEKS TABLE ── -->
+    <div class="bg-white p-6 rounded-2xl shadow">
+        <h2 class="text-xl font-bold text-pink-500 mb-4">Past Weeks</h2>
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="border-b text-left">
+                    <th class="pb-2">From</th>
+                    <th class="pb-2">To</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int w = 1; w < totalWeeks; w++)
+                {
+                    var toDate = DateTime.Today.AddDays(-(w * 7));
+                    var fromDate = DateTime.Today.AddDays(-(w * 7 + 6));
+                    var toStr = toDate.ToString("yyyy-MM-dd");
+                    var fromStr = fromDate.ToString("yyyy-MM-dd");
+                    <tr class="border-b hover:bg-pink-50">
+                        <td class="py-2">@fromDate.ToString("MMM dd, yyyy")</td>
+                        <td>@toDate.ToString("MMM dd, yyyy")</td>
+                        <td>
+                            <button onclick="openWeekModal('@fromStr', '@toStr')"
+                                    class="text-blue-500 hover:underline">
+                                View
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- ── MODAL ── -->
+<div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-2xl w-full max-w-3xl">
+
+        <div class="flex justify-between items-center mb-5">
+            <h3 class="text-xl font-bold text-pink-500" id="modalTitle">Weekly Report</h3>
+            <button onclick="closeModal()" class="text-gray-500 text-xl">✖</button>
+        </div>
+
+        <!-- Three summary cards — updated dynamically by JS -->
+        <div class="grid grid-cols-3 gap-4 mb-6">
+
+            <div class="bg-pink-50 border border-pink-200 rounded-xl p-4 text-center">
+                <p class="text-xs text-pink-400 font-semibold uppercase tracking-widest mb-1">Average Mood</p>
+                <p class="text-3xl" id="modalMoodEmoji">—</p>
+                <p class="text-sm font-medium text-gray-600 mt-1" id="modalMoodLabel">—</p>
+            </div>
+
+            <div class="bg-pink-50 border border-pink-200 rounded-xl p-4 text-center">
+                <p class="text-xs text-pink-400 font-semibold uppercase tracking-widest mb-1">Average Sleep</p>
+                <p class="text-3xl font-bold text-pink-500" id="modalSleepLabel">—</p>
+                <p class="text-sm text-gray-400 mt-1">per night</p>
+            </div>
+
+            <div class="bg-pink-50 border border-pink-200 rounded-xl p-4 text-center">
+                <p class="text-xs text-pink-400 font-semibold uppercase tracking-widest mb-1">Sleep Quality</p>
+                <div class="w-4 h-4 rounded-full mx-auto mt-1 mb-1" id="modalQualityDot"></div>
+                <p class="text-sm font-medium text-gray-600" id="modalQualityLabel">—</p>
+            </div>
+
+        </div>
+
+        <div class="relative">
+            <canvas id="modalChart" height="120"></canvas>
+        </div>
+
+        <!-- Legend -->
+        <div class="mt-4">
+            <p class="text-sm font-semibold text-gray-600 mb-2">Sleep Quality:</p>
+            <div class="flex gap-4 flex-wrap">
+                @foreach (var sq in sleepQualityMap)
+                {
+                    <div class="flex items-center gap-1.5">
+                        <div class="w-3 h-3 rounded-sm" style="background:@sq.Value[1];"></div>
+                        <span class="text-sm text-gray-600">@sq.Value[0]</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const labels       = @Html.Raw(Json.Serialize(dates));
+    const sleepData    = @Html.Raw(Json.Serialize(sleepList));
+    const sleepQuality = @Html.Raw(Json.Serialize(qualityList));
+    const moodValue    = @Html.Raw(Json.Serialize(moodList));
+
+    const moodEmojis = @Html.Raw(Json.Serialize(dailyMoodLabels.Select(l => l[1]).ToList()));
+    const moodLabels = @Html.Raw(Json.Serialize(dailyMoodLabels.Select(l => l[0]).ToList()));
+
+    const qualityName  = {1:'Poor', 2:'Fair', 3:'Good', 4:'Excellent'};
+    const qualityColor = {4:'#fbb6ce', 3:'#f472b6', 2:'#ec4899', 1:'#be185d'};
+    const moodEmojiMap = {1:'😡', 2:'😟', 3:'😐', 4:'🙂', 5:'😊'};
+    const moodLabelMap = {1:'Angry', 2:'Anxious', 3:'Neutral', 4:'Good', 5:'Happy'};
+
+    function getSleepColors(qualityArr) {
+        return qualityArr.map(q => qualityColor[q] || '#f9a8d4');
+    }
+
+    function buildChartOptions(sleepQualityArr, moodEmojiArr, moodLabelArr) {
+        return {
+            responsive: true,
+            layout: { padding: { top: 40 } },
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Sleep Hours' },
+                    grid: { color: '#fce7f3' }
+                },
+                y1: {
+                    beginAtZero: true,
+                    position: 'right',
+                    min: 0,
+                    max: 6,
+                    ticks: {
+                        stepSize: 1,
+                        callback: function(value) {
+                            const map = {1:'Angry', 2:'Anxious', 3:'Neutral', 4:'Good', 5:'Happy'};
+                            return map[value] || '';
+                        }
+                    },
+                    title: { display: true, text: 'Mood', color: '#ec4899' },
+                    grid: { drawOnChartArea: false }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            const idx = ctx.dataIndex;
+                            if (ctx.dataset.type === 'bar') {
+                                const h  = Math.floor(ctx.raw);
+                                const m  = Math.round((ctx.raw - h) * 60);
+                                const ql = qualityName[sleepQualityArr[idx]] || 'No Data';
+                                return [`Sleep: ${h}h ${m}m`, `Quality: ${ql}`];
+                            } else {
+                                return `Mood: ${moodEmojiArr[idx]} ${moodLabelArr[idx]}`;
+                            }
+                        }
+                    }
+                }
+            }
+        };
+    }
+
+    // Main dashboard chart
+    new Chart(document.getElementById('weeklyChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    type: 'bar',
+                    label: 'Sleep Hours',
+                    data: sleepData,
+                    backgroundColor: getSleepColors(sleepQuality),
+                    order: 1,
+                    borderRadius: 4
+                },
+                {
+                    type: 'line',
+                    label: 'Mood',
+                    data: moodValue,
+                    borderColor: '#02a6f1',
+                    backgroundColor: 'rgba(236, 72, 154, 0)',
+                    fill: true,
+                    yAxisID: 'y1',
+                    tension: 0.4,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#00a2e2',
+                    order: 0
+                }
+            ]
+        },
+        options: buildChartOptions(sleepQuality, moodEmojis, moodLabels)
+    });
+
+    let modalChartInstance = null;
+
+    function openWeekModal(from, to) {
+        document.getElementById('modal').classList.remove('hidden');
+        document.getElementById('modalTitle').textContent = `Report: ${from} → ${to}`;
+
+        // Reset while loading
+        document.getElementById('modalMoodEmoji').textContent    = '…';
+        document.getElementById('modalMoodLabel').textContent    = '';
+        document.getElementById('modalSleepLabel').textContent   = '…';
+        document.getElementById('modalQualityLabel').textContent = '…';
+        document.getElementById('modalQualityDot').style.background = '#d1d5db';
+
+        fetch(`/Report/WeekData?start=${from}&end=${to}`)
+            .then(r => r.json())
+            .then(data => {
+
+                // ── Summary cards ──
+                const nearestMood = Math.min(5, Math.max(1, Math.round(data.avgMood)));
+                if (data.avgMood > 0) {
+                    document.getElementById('modalMoodEmoji').textContent = moodEmojiMap[nearestMood] || '—';
+                    document.getElementById('modalMoodLabel').textContent = moodLabelMap[nearestMood] || '—';
+                } else {
+                    document.getElementById('modalMoodEmoji').textContent = '❌';
+                    document.getElementById('modalMoodLabel').textContent = 'No Data';
+                }
+
+                const h = Math.floor(data.avgSleep);
+                const m = Math.round((data.avgSleep - h) * 60);
+                document.getElementById('modalSleepLabel').textContent = `${h}h ${m}m`;
+
+                const q = Math.round(data.avgQuality) || 0;
+                document.getElementById('modalQualityLabel').textContent    = qualityName[q] || 'No Data';
+                document.getElementById('modalQualityDot').style.background = qualityColor[q] || '#d1d5db';
+
+                // ── Rebuild modal chart ──
+                if (modalChartInstance) modalChartInstance.destroy();
+
+                const modalQualities   = data.quality || [];
+                const modalSleepColors = getSleepColors(modalQualities);
+
+                const modalMoodEmojis = (data.mood || []).map(v => {
+                    if (!v) return '❌';
+                    const k = Math.min(5, Math.max(1, Math.round(v)));
+                    return moodEmojiMap[k] || '—';
+                });
+                const modalMoodLabels = (data.mood || []).map(v => {
+                    if (!v) return 'No Data';
+                    const k = Math.min(5, Math.max(1, Math.Round(v)));
+                    return moodLabelMap[k] || '—';
+                });
+
+                modalChartInstance = new Chart(
+                    document.getElementById('modalChart').getContext('2d'),
+                    {
+                        type: 'bar',
+                        data: {
+                            labels: data.dates,
+                            datasets: [
+                                {
+                                    type: 'bar',
+                                    label: 'Sleep Hours',
+                                    data: data.sleep,
+                                    backgroundColor: modalSleepColors,
+                                    order: 1,
+                                    borderRadius: 4
+                                },
+                                {
+                                    type: 'line',
+                                    label: 'Mood',
+                                    data: data.mood,
+                                    borderColor: '#02a6f1',
+                                    backgroundColor: 'rgba(236, 72, 154, 0)',
+                                    fill: true,
+                                    yAxisID: 'y1',
+                                    tension: 0.4,
+                                    pointRadius: 5,
+                                    pointBackgroundColor: '#00a2e2',
+                                    order: 0
+                                }
+                            ]
+                        },
+                        options: buildChartOptions(modalQualities, modalMoodEmojis, modalMoodLabels)
+                    }
+                );
+            });
+    }
+
+    function closeModal() {
+        document.getElementById('modal').classList.add('hidden');
+    }
+
+    // debug: inspect data received from server
+    console.log('server dates', labels);
+    console.log('server sleepList', sleepData);
+    console.log('server sleepQuality', sleepQuality);
+    console.log('server moodList', moodValue);
+</script>

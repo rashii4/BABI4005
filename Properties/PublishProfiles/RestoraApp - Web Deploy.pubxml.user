@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+This file is used by the publish/package process of your Web project. You can customize the behavior of this process
+by editing this MSBuild file. In order to learn more about this please visit https://go.microsoft.com/fwlink/?LinkID=208121. 
+-->
+<Project>
+  <PropertyGroup>
+    <TimeStampOfAssociatedLegacyPublishXmlFile />
+    <History>False|2026-05-18T23:52:48.5702755Z||;False|2026-05-18T16:51:51.8314488-07:00||;False|2026-05-18T16:48:36.4151207-07:00||;False|2026-05-18T16:46:47.4773225-07:00||;False|2026-05-18T16:23:14.6025465-07:00||;False|2026-05-13T17:19:52.0038315-07:00||;False|2026-05-13T17:13:06.9673661-07:00||;False|2026-05-13T17:09:50.5154079-07:00||;False|2026-05-13T17:07:32.7767683-07:00||;False|2026-05-13T16:34:11.3485551-07:00||;True|2026-05-13T16:00:12.2500180-07:00||;True|2026-05-13T15:34:53.6813338-07:00||;True|2026-05-13T15:32:05.7521420-07:00||;True|2026-05-13T15:03:45.5286530-07:00||;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+  <ItemGroup>
+    <EFMigrations Include="AppDbContext">
+      <Value>Server=tcp:restorasqlserver2.database.windows.net,1433%3bInitial Catalog=RestoraDB2%3bPersist Security Info=False%3bUser ID=restoraadmin%3bPassword=Restora%40admin%3bMultipleActiveResultSets=False%3bEncrypt=True%3bTrustServerCertificate=False%3bConnection Timeout=30%3b</Value>
+    </EFMigrations>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,130 @@
+﻿@page
+@model LoginModel
+
+
+@{
+    ViewData["Title"] = "Log in";
+}
+
+<div class="max-w-6xl mx-auto px-6 py-10">
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+
+        <!-- Left side: Website info -->
+        <div class="space-y-6">
+            <div class="bg-white rounded-3xl shadow p-8 border border-pink-100">
+                <h1 class="text-4xl font-bold text-pink-500 mb-4">
+                    Welcome to Restora
+                </h1>
+                <p class="text-gray-700 leading-relaxed">
+                    Restora helps students track diary entries, sleep logs, mood logs,
+                    and access mental well-being resources in one simple place.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow p-8 border border-pink-100">
+                <h2 class="text-2xl font-bold text-pink-500 mb-4">About Us</h2>
+
+                <h3 class="font-semibold text-gray-800 mt-2">Vision</h3>
+                <p class="text-sm text-gray-600 mb-3">
+                    Inspire students to prioritize well-being and create a stigma-free environment.
+                </p>
+
+                <h3 class="font-semibold text-gray-800 mt-2">Product</h3>
+                <p class="text-sm text-gray-600 mb-3">
+                    A centralized platform for journaling, sleep tracking, mood logs, and resources.
+                </p>
+
+                <h3 class="font-semibold text-gray-800 mt-2">Company</h3>
+                <p class="text-sm text-gray-600">
+                    Founded in 2025 in Burnaby, BC by BCIT students.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow p-8 border border-pink-100">
+                <h2 class="text-2xl font-bold text-pink-500 mb-4">Resources</h2>
+
+                <div class="space-y-2 text-sm">
+                    <a href="https://www.bcit.ca/recreation/" target="_blank" class="block text-pink-500 hover:underline">
+                        Recreation
+                    </a>
+                    <a href="https://www.bcit.ca/health-services/" target="_blank" class="block text-pink-500 hover:underline">
+                        Health Services
+                    </a>
+                    <a href="https://www.bcit.ca/counselling/" target="_blank" class="block text-pink-500 hover:underline">
+                        Counselling
+                    </a>
+                    <a href="https://www.bcit.ca/student-services/health-wellness/" target="_blank" class="block text-pink-500 hover:underline">
+                        Wellness
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right side: Login card -->
+        <div class="bg-white rounded-3xl shadow-lg p-8 border border-pink-100 lg:sticky lg:top-8">
+            <div class="text-center mb-6">
+                <h2 class="text-3xl font-bold text-pink-500">Log in</h2>
+                <p class="text-gray-500 mt-2">
+                    Continue your Restora journey.
+                </p>
+            </div>
+
+            <form id="account" method="post" class="space-y-5">
+                <div asp-validation-summary="ModelOnly" class="text-red-500 text-sm"></div>
+
+                <div>
+                    <label asp-for="Input.Email" class="block text-sm font-medium text-gray-700 mb-1">
+                        Student Email
+                    </label>
+                    <input asp-for="Input.Email"
+                           class="w-full rounded-xl border border-pink-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-300"
+                           autocomplete="username"
+                           aria-required="true"
+                           placeholder="name@example.com" />
+                    <span asp-validation-for="Input.Email" class="text-red-500 text-sm"></span>
+                </div>
+
+                <div>
+                    <label asp-for="Input.Password" class="block text-sm font-medium text-gray-700 mb-1"></label>
+                    <input asp-for="Input.Password"
+                           class="w-full rounded-xl border border-pink-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-300"
+                           autocomplete="current-password"
+                           aria-required="true"
+                           placeholder="password" />
+                    <span asp-validation-for="Input.Password" class="text-red-500 text-sm"></span>
+                </div>
+
+                <div class="flex items-center gap-2 text-sm text-gray-600">
+                    <input asp-for="Input.RememberMe" class="rounded border-pink-300" />
+                    <label asp-for="Input.RememberMe"></label>
+                </div>
+
+                <button id="login-submit"
+                        type="submit"
+                        class="w-full rounded-xl bg-pink-500 text-white font-semibold py-3 hover:bg-pink-600 transition">
+                    Log in
+                </button>
+
+                <div class="text-center space-y-2 text-sm">
+                    <p>
+                        <a id="forgot-password" asp-page="./ForgotPassword" class="text-pink-500 hover:underline">
+                            Forgot your password?
+                        </a>
+                    </p>
+                    <p class="text-gray-600">
+                        Don’t have an account?
+                        <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="text-pink-500 hover:underline">
+                            Register
+                        </a>
+                    </p>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,34 @@
+﻿@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="max-w-4xl mx-auto mt-8">
+    <div class="bg-white rounded-3xl shadow-lg p-8 border border-pink-100">
+        <h1 class="text-3xl font-bold text-pink-500 mb-2">Admin Dashboard</h1>
+        <p class="text-gray-600 mb-6">
+            This page is only available to the approved Admin user.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-pink-50 rounded-2xl p-5">
+                <p class="text-gray-500 text-sm">Total Students</p>
+                <p class="text-3xl font-bold">@ViewBag.StudentCount</p>
+            </div>
+
+            <div class="bg-pink-50 rounded-2xl p-5">
+                <p class="text-gray-500 text-sm">Total Mood Records</p>
+                <p class="text-3xl font-bold">@ViewBag.MoodCount</p>
+            </div>
+
+            <div class="bg-pink-50 rounded-2xl p-5">
+                <p class="text-gray-500 text-sm">Total Sleep Records</p>
+                <p class="text-3xl font-bold">@ViewBag.SleepCount</p>
+            </div>
+
+            <div class="bg-pink-50 rounded-2xl p-5">
+                <p class="text-gray-500 text-sm">Total Diary Entries</p>
+                <p class="text-3xl font-bold">@ViewBag.DiaryCount</p>
+            </div>
+        </div>
+    </div>
+</div>

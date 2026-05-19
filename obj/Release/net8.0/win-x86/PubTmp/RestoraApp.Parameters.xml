@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<parameters>
+  <parameter name="IIS Web Application Name" description="" value="RestoraApp" tags="IisApp">
+    <parameterEntry kind="ProviderPath" scope="IisApp" match="^C:\\Users\\17789\\Downloads\\restora\\RestoraApp\\RestoraApp\\obj\\Release\\net8\.0\\win-x86\\PubTmp\\Out\\$" />
+  </parameter>
+  <parameter name="AppDbContext" description="" value="Server=tcp:restorasqlserver2.database.windows.net,1433;Initial Catalog=RestoraDB2;Persist Security Info=False;User ID=restoraadmin;Password=Restora@admin;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;" tags="dbfullsql">
+    <parameterEntry kind="ProviderPath" scope="dbfullsql" match="^C:\\Users\\17789\\Downloads\\restora\\RestoraApp\\RestoraApp\\obj\\Release\\net8\.0\\win-x86\\PubTmp\\EFSQLScripts\\AppDbContext\.sql$" />
+  </parameter>
+</parameters>

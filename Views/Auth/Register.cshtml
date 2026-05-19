@@ -1,0 +1,57 @@
+﻿@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md mx-auto mt-10">
+
+    <h2 class="text-2xl font-bold text-center text-pink-500 mb-6">
+        Create Restora Account
+    </h2>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="bg-red-100 text-red-600 p-2 rounded mb-4 text-sm">
+            @ViewBag.Error
+        </div>
+    }
+
+    @if (ViewBag.Success != null)
+    {
+        <div class="bg-green-100 text-green-600 p-2 rounded mb-4 text-sm">
+            @ViewBag.Success
+        </div>
+    }
+
+    <form method="post" class="space-y-4">
+
+        <div class="flex gap-2">
+            <input type="text" name="Firstname" placeholder="First Name" required
+                   class="w-1/2 p-2 border rounded-lg focus:ring-2 focus:ring-pink-300">
+
+            <input type="text" name="Lastname" placeholder="Last Name" required
+                   class="w-1/2 p-2 border rounded-lg focus:ring-2 focus:ring-pink-300">
+        </div>
+
+        <input type="text" name="Institution" placeholder="Institution" required
+               class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-pink-300">
+
+        <input type="email" name="Email" placeholder="Student Email" required
+               class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-pink-300">
+
+        <input type="password" name="Password" placeholder="Password" required
+               class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-pink-300">
+
+        <button type="submit"
+                class="w-full bg-pink-400 text-white py-2 rounded-lg hover:bg-pink-500 transition">
+            Register
+        </button>
+    </form>
+
+    <p class="text-sm text-center mt-4">
+        Already have an account?
+        <a href="/Home" class="text-pink-500 hover:underline font-medium">
+            Login
+        </a>
+    </p>
+
+</div>
